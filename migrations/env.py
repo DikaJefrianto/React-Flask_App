@@ -1,8 +1,6 @@
 import logging
 from logging.config import fileConfig
-
-# Import os untuk mengakses environment variables
-import os 
+import os # <-- Wajib diimpor untuk mengakses environment variables
 from flask import current_app
 
 from alembic import context
@@ -46,22 +44,16 @@ target_db = current_app.extensions['migrate'].db
 # ==============================================================
 DB_URL = os.environ.get("DATABASE_URL")
 
-# Jika DATABASE_URL ditemukan (Production/Railway), set sebagai URL utama.
+# 1. Jika DATABASE_URL ditemukan (Production/Railway), set sebagai URL utama.
 # Ini akan mencegah Alembic menggunakan localhost.
 if DB_URL:
     config.set_main_option("sqlalchemy.url", DB_URL)
     logger.info("Using DATABASE_URL from environment for migrations.")
 else:
-    # Jika tidak di set (Development Lokal), gunakan URL yang diambil dari app context.
+    # 2. Jika tidak di set (Development Lokal), gunakan URL yang diambil dari app context.
     config.set_main_option('sqlalchemy.url', get_engine_url())
     logger.info("Using URL from Flask app context (localhost mode).")
 # ==============================================================
-
-
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
 
 
 def get_metadata():
