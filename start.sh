@@ -20,5 +20,4 @@ flask db upgrade
 
 echo "=== AUTO MIGRATION DONE ==="
 
-# Jalankan server
-gunicorn wsgi:app --bind 0.0.0.0:$PORT
+
