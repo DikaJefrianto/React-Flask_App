@@ -8,17 +8,17 @@ from datetime import timedelta
 # ==============================
 from sim_buah_api.config import Config
 from sim_buah_api.database import db, bcrypt, jwt
+from sim_buah_api.models import User, Role, Buah, Supplier, Pelanggan, LogAktivitas
 
 # ==============================
 # ✅ INISIALISASI APP
 # ==============================
 app = Flask(__name__)
 app.config.from_object(Config)
-
 app.url_map.strict_slashes = False
 
 # ==============================
-# ✅ CORS GLOBAL (RAILWAY + VERCEL AMAN)
+# ✅ CORS GLOBAL
 # ==============================
 CORS(
     app,
@@ -44,7 +44,6 @@ def handle_preflight():
 db.init_app(app)
 jwt.init_app(app)
 bcrypt.init_app(app)
-
 migrate = Migrate(app, db)
 
 # ==============================
@@ -53,7 +52,7 @@ migrate = Migrate(app, db)
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=30)
 
 # ==============================
-# ✅ JWT ERROR HANDLER (ANTI CORS ERROR)
+# ✅ JWT ERROR HANDLER
 # ==============================
 @jwt.unauthorized_loader
 def unauthorized_callback(callback):
@@ -67,11 +66,6 @@ def unauthorized_callback(callback):
 @jwt.invalid_token_loader
 def invalid_token_callback(callback):
     return unauthorized_callback(callback)
-
-# ==============================
-# ✅ IMPORT MODEL (WAJIB UNTUK MIGRATION)
-# ==============================
-from sim_buah_api import models
 
 # ==============================
 # ✅ IMPORT & REGISTER BLUEPRINT
@@ -96,36 +90,6 @@ app.register_blueprint(batch_stock_bp, url_prefix="/api/batch-stock")
 app.register_blueprint(inventory_bp, url_prefix="/api/inventory")
 app.register_blueprint(monitor_bp, url_prefix="/api/monitor")
 
-def setup_database():
-    """Fungsi untuk inisialisasi database dan seeding data awal."""
-    with app.app_context():
-        
-        # 1. Buat Tabel Database (jika belum ada di PostgreSQL)
-        print("Mencoba membuat SEMUA tabel database (db.create_all())...")
-        db.create_all() 
-        print("Inisialisasi tabel selesai.")
-        
-        # 2. Seeding Data Awal (Roles)
-        if Role.query.count() == 0:
-            print("Seeding Roles...")
-            roles = [
-                Role(nama_role='Admin', deskripsi='Akses penuh ke semua modul dan konfigurasi.'),
-                Role(nama_role='Manajer', deskripsi='Akses ke Laporan dan Transaksi.'),
-                Role(nama_role='Petugas Gudang', deskripsi='Akses ke Transaksi Barang Masuk dan Keluar.')
-            ]
-            db.session.add_all(roles)
-            db.session.commit()
-            print("3 Roles berhasil ditambahkan.")
-            
-        # 3. Seeding User Admin Default
-        admin_role = Role.query.filter_by(nama_role='Admin').first()
-        if admin_role and not User.query.filter_by(username='admin').first():
-             print("Menambahkan User Admin Default 'admin'...")
-             admin = User(user_id=1, role_id=admin_role.role_id, username='admin', nama_lengkap='Super Admin Sistem')
-             admin.set_password('12345678') # Sandi '12345678'
-             db.session.add(admin)
-             db.session.commit()
-             print(f"User '{admin.username}' berhasil ditambahkan (Sandi: 12345678).")
 # ==============================
 # ✅ HEALTH CHECK
 # ==============================
@@ -137,7 +101,45 @@ def get_status():
     }), 200
 
 # ==============================
-# ✅ LOCAL RUN (OPTIONAL)
+# ✅ SETUP DATABASE & SEEDING
+# ==============================
+def setup_database():
+    """Inisialisasi tabel + seeding roles + admin default"""
+    with app.app_context():
+        print("Mencoba membuat SEMUA tabel database (db.create_all())...")
+        db.create_all()
+        print("Inisialisasi tabel selesai.")
+
+        # Seeding Roles
+        if Role.query.count() == 0:
+            print("Seeding Roles...")
+            roles = [
+                Role(nama_role='Admin', deskripsi='Akses penuh ke semua modul dan konfigurasi.'),
+                Role(nama_role='Manajer', deskripsi='Akses ke Laporan dan Transaksi.'),
+                Role(nama_role='Petugas Gudang', deskripsi='Akses ke Transaksi Barang Masuk dan Keluar.')
+            ]
+            db.session.add_all(roles)
+            db.session.commit()
+            print("3 Roles berhasil ditambahkan.")
+
+        # Seeding Admin Default
+        admin_role = Role.query.filter_by(nama_role='Admin').first()
+        if admin_role and not User.query.filter_by(username='admin').first():
+            print("Menambahkan User Admin Default 'admin'...")
+            admin = User(role_id=admin_role.role_id, username='admin', nama_lengkap='Super Admin Sistem')
+            admin.set_password('12345678')
+            db.session.add(admin)
+            db.session.commit()
+            print(f"User '{admin.username}' berhasil ditambahkan (Sandi: 12345678).")
+
+# ==============================
+# ✅ LOCAL RUN
 # ==============================
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Setup database otomatis saat server dijalankan
+    setup_database()
+
+    print("\n--- Flask Server Running ---")
+    print(f"Akses API Status: http://127.0.0.1:5000/api/status")
+    print(f"Akses Login API: http://127.0.0.1:5000/api/auth/login")
+    app.run(debug=True, host="0.0.0.0", port=5000)
