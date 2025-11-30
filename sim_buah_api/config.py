@@ -14,13 +14,8 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
 
-    # --- DATABASE (WAJIB DARI RAILWAY SAAT PRODUCTION) ---
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
-
-    if not SQLALCHEMY_DATABASE_URI:
-        raise RuntimeError(
-            "DATABASE_URL tidak ditemukan! "
-            "Pastikan sudah disetel di Railway Variables."
-        )
+    # --- DATABASE (RAILWAY MYSQL) ---
+    # Hardcode URL langsung dari Railway
+    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:FASLvFHLsoARHzMYRuATCnFCvmwjkigR@switchyard.proxy.rlwy.net:33430/railway"
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
