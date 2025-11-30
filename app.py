@@ -1,7 +1,8 @@
+import os
+from datetime import timedelta
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_migrate import Migrate
-from datetime import timedelta
 
 # ==============================
 # ✅ IMPORT CONFIG & EXTENSION
@@ -132,13 +133,13 @@ def setup_database():
             db.session.commit()
             print(f"User '{admin.username}' berhasil ditambahkan (Sandi: 12345678).")
 
+# ⚠️ PENTING: Panggil setup_database di luar __main__
+setup_database()
+
 # ==============================
-# ✅ LOCAL RUN
+# ✅ LOCAL RUN (HANYA UNTUK DEVELOPMENT)
 # ==============================
 if __name__ == "__main__":
-    # Setup database otomatis saat server dijalankan
-    setup_database()
-
     print("\n--- Flask Server Running ---")
     print(f"Akses API Status: http://127.0.0.1:5000/api/status")
     print(f"Akses Login API: http://127.0.0.1:5000/api/auth/login")
