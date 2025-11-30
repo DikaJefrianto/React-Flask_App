@@ -17,7 +17,7 @@ def create_app(config_class=Config):
 
     # FIX: Konfigurasi CORS Universal
     CORS(app, 
-         origins=["http://localhost:5173"], 
+         origins=["https://react-frontend-dusky-rho.vercel.app"], 
          supports_credentials=True, 
          expose_headers=["Content-Disposition"]) 
 
