@@ -23,7 +23,7 @@ app.url_map.strict_slashes = False
 # ==============================
 CORS(
     app,
-    resources={r"/api/*": {"origins": "*"}},
+    resources={r"/api/*": {"origins": "https://react-frontend-dusky-rho.vercel.app"}},
     supports_credentials=True
 )
 
